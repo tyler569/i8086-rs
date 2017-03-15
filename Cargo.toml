@@ -1,0 +1,9 @@
+[package]
+name = "i8086"
+version = "0.1.0"
+authors = ["Tyler Philbrick <t5j6p9@gmail.com>"]
+crate-type = "bin"
+
+[dependencies]
+bitflags = "0.8"
+
