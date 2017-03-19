@@ -1,43 +1,40 @@
 
 use std::num::Wrapping;
-use std::mem::transmute;
 
-/// A representation of an 8086 register
-///
-/// Note that this currently relies on some probably unstable 
-/// definately unsafe behavior, as it creates pointers into an integer,
-/// and will likely not work on a big-endian platform.
-///
-/// All internal values are Wrapping<u16> or Wrapping<u8> to model
-/// the 8086's wrapping behavior.
-///
-/// # Example
-///
-/// ```
-/// let mut c = Register::new(0);
-/// *c.high() += 1;
-/// *c.low() += 1;
-///
-/// assert_eq!(*c.val(), Wrapping(257));
-/// ```
-#[derive(Debug)]
-pub struct Register(Wrapping<u16>);
-
-impl Register {
-    pub fn new(value: u16) -> Register {
-        Register(Wrapping(value))
-    }
-    pub fn val(&mut self) -> &mut Wrapping<u16> {
-        unsafe { transmute(self) }
-    }
-    pub fn low(&mut self) -> &mut Wrapping<u8> {
-        unsafe { transmute(self) }
-    }
-    pub fn high(&mut self) -> &mut Wrapping<u8> {
-        let c = unsafe { transmute::<_, *mut Wrapping<u8>>(self).offset(1) };
-        unsafe { transmute(c) }
-    }
+pub fn low(r: Wrapping<u16>) -> Wrapping<u8> {
+    let Wrapping(v) = r;
+    Wrapping(v as u8)
 }
+
+pub fn high(r: Wrapping<u16>) -> Wrapping<u8> {
+    let Wrapping(v) = r >> 8;
+    Wrapping(v as u8)
+}
+
+pub fn set_low(r: Wrapping<u16>, n: Wrapping<u8>) -> Wrapping<u16> {
+    let Wrapping(v) = n;
+    (r & Wrapping(0xFF00)) | Wrapping(v as u16)
+}
+
+pub fn set_high(r: Wrapping<u16>, n: Wrapping<u8>) -> Wrapping<u16> {
+    let Wrapping(v) = n;
+    (r & Wrapping(0x00FF)) | Wrapping((v as u16) << 8)
+}
+
+
+pub const AX: usize = 0;
+pub const CX: usize = 1;
+pub const DX: usize = 2;
+pub const BX: usize = 3;
+pub const SI: usize = 4;
+pub const DI: usize = 5;
+pub const SP: usize = 6;
+pub const BP: usize = 7;
+pub const ES: usize = 0;
+pub const CS: usize = 1;
+pub const SS: usize = 2;
+pub const DS: usize = 3;
+
 
 #[cfg(test)]
 mod tests {
@@ -45,11 +42,12 @@ mod tests {
 
     #[test]
     fn test_register() {
-        let mut c = Register(Wrapping(0x1010));
-        *c.high() = Wrapping(0xA0);
-        *c.low() += Wrapping(0xEF);
-        *c.low() += Wrapping(0x01);
-        assert_eq!(*c.val(), Wrapping(0xA000));
+        let r = Wrapping(0);
+        let r = set_high(r, Wrapping(0x80));
+        let r = set_low(r, Wrapping(0x80));
+        let r = set_low(r, low(r) + Wrapping(6));
+        assert_eq!(r, Wrapping(0x8086));
+        
     }
 }
 

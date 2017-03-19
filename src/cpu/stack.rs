@@ -1,16 +1,17 @@
 
 use std::num::Wrapping;
 use cpu::{seg, CPU};
+use register::*;
 
 impl CPU {
     pub fn push(&mut self, value: u16) {
-        self.sp -= Wrapping(2);
-        self.ram.write_w(seg(self.ss, self.sp), value);
+        self.gpr[SP] -= Wrapping(2);
+        self.ram.write_w(seg(self.seg[SS], self.gpr[SP]), value);
     }
 
     pub fn pop(&mut self) -> u16 {
-        let ret = self.ram.read_w(seg(self.ss, self.sp));
-        self.sp += Wrapping(2);
+        let ret = self.ram.read_w(seg(self.seg[SS], self.gpr[SP]));
+        self.gpr[SP] += Wrapping(2);
         ret
     }
 }
@@ -24,9 +25,9 @@ mod tests {
     fn test_stack() {
         let mut c = CPU::new();
         c.push(0xFFAA);
-        assert_eq!(c.sp, Wrapping(0xFFFE));
+        assert_eq!(c.gpr[SP], Wrapping(0xFFFE));
         assert_eq!(c.pop(), 0xFFAA);
-        assert_eq!(c.sp, Wrapping(0));
+        assert_eq!(c.gpr[SP], Wrapping(0));
     }
 }
 

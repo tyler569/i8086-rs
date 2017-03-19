@@ -1,6 +1,5 @@
 
-use std::{fmt, ops};
-use std::num::Wrapping;
+use std::fmt;
 
 const RAM_LEN: usize = 65536;
 
@@ -31,6 +30,16 @@ impl Ram {
         ret |= self.data[addr] as u16;
         ret |= (self.data[addr + 1] as u16) << 8;
         ret
+    }
+
+    pub fn load(&mut self, addr: usize, data: &[u8]) {
+        for (i, v) in data.iter().enumerate() {
+            self.data[addr + i] = *v;
+        }
+    }
+
+    pub fn dump(&self, addr: usize, len: usize) -> &[u8] {
+        &self.data[addr..addr+len]
     }
 }
 
