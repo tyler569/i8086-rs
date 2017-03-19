@@ -1,101 +1,55 @@
 
-use std::{ops, fmt};
+use std::num::Wrapping;
+use std::mem::transmute;
 
-pub struct Register {
-    pub low: u8,
-    pub high: u8,
-}
+/// A representation of an 8086 register
+///
+/// Note that this currently relies on some probably unstable 
+/// definately unsafe behavior, as it creates pointers into an integer,
+/// and will likely not work on a big-endian platform.
+///
+/// All internal values are Wrapping<u16> or Wrapping<u8> to model
+/// the 8086's wrapping behavior.
+///
+/// # Example
+///
+/// ```
+/// let mut c = Register::new(0);
+/// *c.high() += 1;
+/// *c.low() += 1;
+///
+/// assert_eq!(*c.val(), Wrapping(257));
+/// ```
+#[derive(Debug)]
+pub struct Register(Wrapping<u16>);
 
 impl Register {
     pub fn new(value: u16) -> Register {
-        let low = value as u8;
-        let high = (value >> 8) as u8;
-        Register { low: low, high: high }
+        Register(Wrapping(value))
     }
-
-    pub fn get(&self) -> u16 {
-        (self.high as u16) << 8 | (self.low as u16)
+    pub fn val(&mut self) -> &mut Wrapping<u16> {
+        unsafe { transmute(self) }
     }
-
-    pub fn set(&mut self, value: u16) {
-        self.low = value as u8;
-        self.high = (value >> 8) as u8;
+    pub fn low(&mut self) -> &mut Wrapping<u8> {
+        unsafe { transmute(self) }
     }
-}
-
-impl ops::AddAssign<u16> for Register {
-    fn add_assign(&mut self, other: u16) {
-        let temp = self.get();
-        self.set(temp + other);
+    pub fn high(&mut self) -> &mut Wrapping<u8> {
+        let c = unsafe { transmute::<_, *mut Wrapping<u8>>(self).offset(1) };
+        unsafe { transmute(c) }
     }
 }
 
-impl ops::SubAssign<u16> for Register {
-    fn sub_assign(&mut self, other: u16) {
-        let temp = self.get();
-        self.set(temp - other);
-    }
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-impl ops::BitAndAssign<u16> for Register {
-    fn bitand_assign(&mut self, other: u16) {
-        let temp = self.get();
-        self.set(temp & other);
-    }
-}
-
-impl ops::BitXorAssign<u16> for Register {
-    fn bitxor_assign(&mut self, other: u16) {
-        let temp = self.get();
-        self.set(temp ^ other);
-    }
-}
-
-impl ops::BitOrAssign<u16> for Register {
-    fn bitor_assign(&mut self, other: u16) {
-        let temp = self.get();
-        self.set(temp | other);
-    }
-}
-
-impl ops::ShlAssign<u16> for Register {
-    fn shl_assign(&mut self, other: u16) {
-        let temp = self.get();
-        self.set(temp << other);
-    }
-}
-
-impl ops::ShrAssign<u16> for Register {
-    fn shr_assign(&mut self, other: u16) {
-        let temp = self.get();
-        self.set(temp >> other);
-    }
-}
-
-impl fmt::Display for Register {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // Is this all?
-        write!(f, "{}", self.get())
-    }
-}
-
-bitflags! {
-    flags Flags: u16 {
-        const CF = 1 << 0,
-        const PF = 1 << 2,
-        const AF = 1 << 4,
-        const ZF = 1 << 6,
-        const SF = 1 << 7,
-        const TF = 1 << 8,
-        const IF = 1 << 9,
-        const DF = 1 << 10,
-        const OF = 1 << 11,
-    }
-}
-
-impl fmt::Display for Flags {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!("{}", "X...S.A.I.Z");
+    #[test]
+    fn test_register() {
+        let mut c = Register(Wrapping(0x1010));
+        *c.high() = Wrapping(0xA0);
+        *c.low() += Wrapping(0xEF);
+        *c.low() += Wrapping(0x01);
+        assert_eq!(*c.val(), Wrapping(0xA000));
     }
 }
 
