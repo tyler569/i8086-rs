@@ -26,7 +26,7 @@ impl CPU {
      pub fn new() -> CPU {
         CPU {
             gpr: [Wrapping(0); 8], seg: [Wrapping(0); 4],
-            ip: Wrapping(0), flags: OF, ram: Ram::new(),
+            ip: Wrapping(0), flags: OF, ram: Ram::new(65536),
         }
     }
 }

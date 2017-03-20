@@ -1,15 +1,13 @@
 
 use std::fmt;
 
-const RAM_LEN: usize = 65536;
-
 pub struct Ram {
-    data: Box<[u8]>,
+    data: Vec<u8>,
 }
 
 impl Ram {
-    pub fn new() -> Ram {
-        Ram { data: Box::new([0; RAM_LEN]) }
+    pub fn new(len: usize) -> Ram {
+        Ram { data: vec![0; len] }
     }
 
     pub fn write_b(&mut self, addr: usize, value: u8) {
@@ -45,7 +43,7 @@ impl Ram {
 
 impl fmt::Debug for Ram {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Ram[...{}]", RAM_LEN)
+        write!(f, "Ram[u8; {}]", self.data.len())
     }
 }
 
