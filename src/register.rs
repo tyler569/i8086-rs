@@ -1,26 +1,21 @@
 
-use std::num::Wrapping;
-
-pub fn low(r: Wrapping<u16>) -> Wrapping<u8> {
-    let Wrapping(v) = r;
-    Wrapping(v as u8)
+pub fn low(r: u16) -> u8 {
+    r as u8
 }
 
-pub fn high(r: Wrapping<u16>) -> Wrapping<u8> {
-    let Wrapping(v) = r >> 8;
-    Wrapping(v as u8)
+pub fn high(r: u16) -> u8 {
+    (r >> 8) as u8
 }
 
-pub fn set_low(r: Wrapping<u16>, n: Wrapping<u8>) -> Wrapping<u16> {
-    let Wrapping(v) = n;
-    (r & Wrapping(0xFF00)) | Wrapping(v as u16)
+pub fn set_low(r: &mut u16, n: u8) {
+    *r &= 0xFF00;
+    *r |= n as u16;
 }
 
-pub fn set_high(r: Wrapping<u16>, n: Wrapping<u8>) -> Wrapping<u16> {
-    let Wrapping(v) = n;
-    (r & Wrapping(0x00FF)) | Wrapping((v as u16) << 8)
+pub fn set_high(r: &mut u16, n: u8) {
+    *r &= 0x00FF;
+    *r |= (n as u16) << 8;
 }
-
 
 pub const AX: usize = 0;
 pub const CX: usize = 1;
@@ -35,19 +30,18 @@ pub const CS: usize = 1;
 pub const SS: usize = 2;
 pub const DS: usize = 3;
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_register() {
-        let r = Wrapping(0);
-        let r = set_high(r, Wrapping(0x80));
-        let r = set_low(r, Wrapping(0x80));
-        let r = set_low(r, low(r) + Wrapping(6));
-        assert_eq!(r, Wrapping(0x8086));
-        
+        let mut r = 0;
+        set_high(&mut r, 0x80);
+        set_low(&mut r, 0x80);
+        let tmp = low(r) + 6;
+        set_low(&mut r, tmp);
+        assert_eq!(r, 0x8086);
     }
 }
 

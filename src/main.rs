@@ -13,7 +13,8 @@ use cpu::CPU;
 
 fn main() {
     let mut c = CPU::new();
-    let program = &[0x40, 0x40, 0x40, 0x50, 0x50, 0x50, 0x40, 0x59, 0x07, 0x96];
+    let program = include_bytes!("../asm/test_func");
+    println!("Program: {:?}", program);
     c.ram.load(0, program);
     for _ in 0..program.len() {
         c.execute_op();

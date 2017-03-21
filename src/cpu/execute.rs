@@ -1,5 +1,4 @@
 
-use std::num::Wrapping;
 use cpu::{CPU, seg};
 use cpu::ops::*;
 use register::*;
@@ -9,29 +8,31 @@ impl CPU {
         let op = self.ram.read_b(seg(self.seg[CS], self.ip));
         match op {
             PUSH_ES => {
-                let Wrapping(es) = self.seg[ES];
+                let es = self.seg[ES];
                 self.push(es);
             }
             POP_ES => {
-                let es = Wrapping(self.pop());
+                let es = self.pop();
                 self.seg[ES] = es;
             }
             INC_R...0x47 => {
                 let reg = (op - INC_R) as usize;
-                self.gpr[reg] += Wrapping(1);
+                self.gpr[reg] = self.gpr[reg].wrapping_add(1);
+                // Flags?
             }
             DEC_R...0x4F => {
                 let reg = (op - DEC_R) as usize;
-                self.gpr[reg] -= Wrapping(1);
+                self.gpr[reg] = self.gpr[reg].wrapping_sub(1);
+                // Flags ?
             }
             PUSH_R...0x57 => {
                 let reg = (op - PUSH_R) as usize;
-                let Wrapping(value) = self.gpr[reg];
+                let value = self.gpr[reg];
                 self.push(value);
             }
             POP_R...0x5F => {
                 let reg = (op - POP_R) as usize;
-                let value = Wrapping(self.pop());
+                let value = self.pop();
                 self.gpr[reg] = value;
             }
             NOP => {}
@@ -43,9 +44,9 @@ impl CPU {
             }
             HLT => {}
 
-            _ => panic!("#UD"),
+            _ => panic!("#UD: 0x{:02x}", op),
         }
-        self.ip += Wrapping(1);
+        self.ip += 1;
     }
 }
 

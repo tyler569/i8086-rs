@@ -17,7 +17,19 @@ bitflags! {
 
 impl fmt::Display for Flags {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "make X...S.A.I.Z")
+        write!(f, "[.........]")
+    }
+}
+
+fn result_flags(f: &mut Flags, result: u16) {
+    if result == 0 {
+        f.insert(ZF);
+    }
+    if result >> 15 == 1 {
+        f.insert(SF);
+    }
+    if result.count_ones() % 2 == 0 {
+        f.insert(PF);
     }
 }
 
