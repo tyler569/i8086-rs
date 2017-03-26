@@ -1,16 +1,18 @@
 
-use cpu::{seg, CPU};
-use register::*;
+use cpu::CPU;
+use cpu::seg;
 
 impl CPU {
     pub fn push(&mut self, value: u16) {
-        self.gpr[SP] = self.gpr[SP].wrapping_sub(2);
-        self.ram.write_w(seg(self.seg[SS], self.gpr[SP]), value);
+        self.sp = self.sp.wrapping_sub(2);
+        let tos = seg(self.ss, self.sp);
+        self.ram.write_w(tos, value);
     }
 
     pub fn pop(&mut self) -> u16 {
-        let ret = self.ram.read_w(seg(self.seg[SS], self.gpr[SP]));
-        self.gpr[SP] = self.gpr[SP].wrapping_add(2);
+        let tos = seg(self.ss, self.sp);
+        let ret = self.ram.read_w(tos);
+        self.sp = self.sp.wrapping_add(2);
         ret
     }
 }
@@ -24,9 +26,9 @@ mod tests {
     fn test_stack() {
         let mut c = CPU::new();
         c.push(0xFFAA);
-        assert_eq!(c.gpr[SP], 0xFFFE);
+        assert_eq!(c.sp, 0xFFFE);
         assert_eq!(c.pop(), 0xFFAA);
-        assert_eq!(c.gpr[SP], 0);
+        assert_eq!(c.sp, 0);
     }
 }
 
