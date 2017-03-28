@@ -1,4 +1,5 @@
 
+/*
 enum RamAddressMode {
     BX_SI,
     BX_DI,
@@ -27,11 +28,11 @@ enum ModRMType {
     Ram,
 }
 use ModRMType::*;
-
+*/
 /*
  * Mod = 0,1,2,3
  */
-
+/*
 impl CPU {
     fn modrm(r: ModRMType, rm: ModRMType, modrm: u8) -> RegMem {
         let ix = modrm >> 6;
@@ -59,4 +60,4 @@ impl CPU {
         (register, register_mem)
     }
 }        
-
+*/

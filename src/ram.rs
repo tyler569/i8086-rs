@@ -1,20 +1,20 @@
 
 use std::fmt;
 
-pub struct Ram {
+pub struct RAM {
     data: Vec<u8>,
 }
 
-impl Ram {
-    pub fn new(len: usize) -> Ram {
-        Ram { data: vec![0; len] }
+impl RAM {
+    pub fn new(len: usize) -> RAM {
+        RAM { data: vec![0; len] }
     }
 
     pub fn write_b(&mut self, addr: usize, value: u8) {
         self.data[addr] = value;
     }
 
-    pub fn read_b(&mut self, addr: usize) -> u8 {
+    pub fn read_b(&self, addr: usize) -> u8 {
         self.data[addr]
     }
 
@@ -41,9 +41,9 @@ impl Ram {
     }
 }
 
-impl fmt::Debug for Ram {
+impl fmt::Debug for RAM {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Ram[u8; {}]", self.data.len())
+        write!(f, "RAM[u8; {}]", self.data.len())
     }
 }
 

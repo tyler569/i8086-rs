@@ -5,22 +5,16 @@ mod ops;
 
 use std::fmt;
 use flags::*;
-use ram::Ram;
+use ram::RAM;
 use register;
 
-#[deprecated]
-fn seg(segment: u16, offset: u16) -> usize {
-    (segment as usize) * 16 + offset as usize
-}
 
 #[derive(Debug)]
 pub struct CPU {
     pub ax: u16, pub cx: u16, pub dx: u16, pub bx: u16,
     pub si: u16, pub di: u16, pub sp: u16, pub bp: u16,
     pub es: u16, pub cs: u16, pub ss: u16, pub ds: u16,
-    pub ip: u16,
-    pub flags: Flags,
-    pub ram: Ram,
+    pub ip: u16, pub flags: Flags,
 }                                                                              
 
 impl CPU {
@@ -29,7 +23,6 @@ impl CPU {
             ax: 0, cx: 0, dx: 0, bx: 0, si: 0, di: 0, sp: 0, bp: 0,
             es: 0, cs: 0, ss: 0, ds: 0,
             ip: 0, flags: Flags::empty(),
-            ram: Ram::new(65536),
         }
     }
 
@@ -113,27 +106,25 @@ impl CPU {
         }
     }
 
-    pub fn ram_read_u8(&self, segment: u16, offset: u16) -> u8 {
-        unimplemented!()
+    pub fn ram_read_b(&self, ram: &RAM, segment: u16, offset: u16) -> u8 {
+        ram.read_b(CPU::seg_to_phy(segment, offset))
     }
 
-    pub fn ram_read_u16(&self, segment: u16, offset: u16) -> u16 {
-        unimplemented!()
+    pub fn ram_read_w(&self, ram: &RAM, segment: u16, offset: u16) -> u16 {
+        ram.read_w(CPU::seg_to_phy(segment, offset))
     }
 
-    pub fn ram_write_u8(&self, segment: u16, offset: u16, value: u8) {
-        unimplemented!()
+    pub fn ram_write_b(&self, ram: &mut RAM, segment: u16, offset: u16, value: u8) {
+        ram.write_b(CPU::seg_to_phy(segment, offset), value)
     }
 
-    pub fn ram_write_u16(&self, segment: u16, offset: u16, value: u16) {
-        unimplemented!()
+    pub fn ram_write_w(&self, ram: &mut RAM, segment: u16, offset: u16, value: u16) {
+        ram.write_w(CPU::seg_to_phy(segment, offset), value)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     fn test_cpu() {
         // Something
